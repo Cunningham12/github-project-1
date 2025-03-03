@@ -1,0 +1,124 @@
+namespace Quadtree
+{
+    /// <summary>
+    /// Represents an internal node in the quadtree that manages child nodes and splits when necessary.
+    /// </summary>
+    public class InternalNode : Node
+    {
+        /// <summary>
+        /// Gets the list of child nodes.
+        /// </summary>
+        public List<Node> Children { get; private set; }
+
+        private readonly int _threshold;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InternalNode"/> class.
+        /// </summary>
+        public InternalNode(int xMin, int yMin, int xMax, int yMax, int threshold) 
+            : base(xMin, yMin, xMax, yMax)
+        {
+            _threshold = threshold;
+            Children = new List<Node>();
+        }
+
+        /// <summary>
+        /// Inserts a rectangle into the node, splitting if necessary.
+        /// </summary>
+        public override void Insert(Rectangle rect)
+        {
+            if (Rectangles.Count < _threshold)
+            {
+                Rectangles.Add(rect);
+            }
+            else
+            {
+                SplitNode();
+                InsertIntoChildNode(rect);
+            }
+        }
+
+        /// <summary>
+        /// Splits the node into four quadrants.
+        /// </summary>
+        private void SplitNode()
+        {
+            int midX = (XMin + XMax) / 2;
+            int midY = (YMin + YMax) / 2;
+
+            Children = new List<Node>
+            {
+                new LeafNode(_threshold, new Rectangle(XMin, midY, midX, YMax)),
+                new LeafNode(_threshold, new Rectangle(midX, midY, XMax, YMax)),
+                new LeafNode(_threshold, new Rectangle(XMin, YMin, midX, midY)),
+                new LeafNode(_threshold, new Rectangle(midX, YMin, XMax, midY))
+            };
+
+            foreach (var rect in Rectangles)
+            {
+                InsertIntoChildNode(rect);
+            }
+
+            Rectangles.Clear();
+        }
+
+        /// <summary>
+        /// Inserts a rectangle into the appropriate child node.
+        /// </summary>
+        private void InsertIntoChildNode(Rectangle rect)
+        {
+            foreach (var child in Children)
+            {
+                child.Insert(rect);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a rectangle from the node.
+        /// </summary>
+        public override void Delete(int x, int y)
+        {
+            foreach (var child in Children)
+            {
+                child.Delete(x, y);
+            }
+        }
+
+        /// <summary>
+        /// Finds a rectangle within the node.
+        /// </summary>
+        public override Rectangle? Find(int x, int y)
+        {
+            foreach (var child in Children)
+            {
+                var rect = child.Find(x, y);
+                if (rect != null)
+                    return rect;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Updates a rectangle's dimensions in the node.
+        /// </summary>
+        public override void Update(int x, int y, int height, int width)
+        {
+            foreach (var child in Children)
+            {
+                child.Update(x, y, height, width);
+            }
+        }
+
+        /// <summary>
+        /// Dumps the internal node structure.
+        /// </summary>
+        public override void Dump(int level)
+        {
+            Console.WriteLine(new string('\t', level) + $"Internal Node at [{XMin},{YMin}] to [{XMax},{YMax}]");
+            foreach (var child in Children)
+            {
+                child.Dump(level + 1);
+            }
+        }
+    }
+}
