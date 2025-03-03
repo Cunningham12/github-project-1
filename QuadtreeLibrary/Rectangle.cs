@@ -1,87 +1,52 @@
-namespace Quadtree
+namespace FileReaderParserLibrary.Tests
 {
+    using System;
+    using System.IO;
+    using Xunit;
+
     /// <summary>
-    /// Represents a rectangle defined by its position and dimensions.
+    /// Unit tests for verifying the functionality of the <see cref="FileReader"/> class.
     /// </summary>
-    public class Rectangle
+    public class FileReaderTests
     {
-        /// <summary>
-        /// Gets or sets the x-coordinate of the rectangle's top-left corner.
-        /// </summary>
-        public int x { get; set; }
+        // Constant to manage the file path for testing.
+        private static readonly string FilePath = "testfile.txt";
 
         /// <summary>
-        /// Gets or sets the y-coordinate of the rectangle's top-left corner.
+        /// Verifies that the <see cref="FileReader.ReadFile"/> method reads the file content correctly.
         /// </summary>
-        public int y { get; set; }
-
-        /// <summary>
-        /// Gets or sets the length (height) of the rectangle.
-        /// </summary>
-        public int length { get; set; }
-
-        /// <summary>
-        /// Gets or sets the width of the rectangle.
-        /// </summary>
-        public int width { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Rectangle"/> class with specified coordinates and dimensions.
-        /// </summary>
-        /// <param name="x">The x-coordinate of the rectangle's top-left corner.</param>
-        /// <param name="y">The y-coordinate of the rectangle's top-left corner.</param>
-        /// <param name="length">The length (height) of the rectangle.</param>
-        /// <param name="width">The width of the rectangle.</param>
-        public Rectangle(int x, int y, int length, int width)
+        [Fact]
+        public void Should_ReadFileContentCorrectly_When_FileExists()
         {
-            this.x = x;
-            this.y = y;
-            this.length = length;
-            this.width = width;
+            // Setup: Create a file with expected content.
+            var expectedContent = "Hello, world!";
+            File.WriteAllText(FilePath, expectedContent);
+
+            var reader = new FileReader();
+
+            // Act: Read content from the file.
+            var actualContent = reader.ReadFile(FilePath);
+
+            // Assert: Check if the content read from the file matches the expected.
+            Assert.Equal(expectedContent, actualContent);
+
+            // Clean up: Delete the file after test execution.
+            File.Delete(FilePath);
         }
 
         /// <summary>
-        /// Gets the area of the rectangle.
+        /// Verifies that the <see cref="FileReader.ReadFile"/> method throws an exception when
+        /// trying to read a non-existing file.
         /// </summary>
-        /// <returns>The area of the rectangle (length * width).</returns>
-        public int GetArea()
+        [Fact]
+        public void Should_ThrowFileNotFoundException_When_FileDoesNotExist()
         {
-            return length * width;
-        }
+            // Setup: Path to a non-existent file.
+            var nonExistentFilePath = "missingfile.txt";
+            var reader = new FileReader();
 
-        /// <summary>
-        /// Gets the perimeter of the rectangle.
-        /// </summary>
-        /// <returns>The perimeter of the rectangle (2 * (length + width)).</returns>
-        public int GetPerimeter()
-        {
-            return 2 * (length + width);
+            // Act & Assert: Check that reading a non-existent file throws an exception.
+            Assert.Throws<FileNotFoundException>(() => reader.ReadFile(nonExistentFilePath));
         }
-
-        /// <summary>
-        /// Determines whether a given point is inside the rectangle.
-        /// </summary>
-        /// <param name="px">The x-coordinate of the point to check.</param>
-        /// <param name="py">The y-coordinate of the point to check.</param>
-        /// <returns><c>true</c> if the point is inside the rectangle; otherwise, <c>false</c>.</returns>
-        public bool IsPointInside(int px, int py)
-        {
-            return px >= x && px <= x + width && py >= y && py <= y + length;
-        }
-        public override bool Equals(object? obj)
-        {
-            if (obj is Rectangle other)
-            {
-                return this.x == other.x && this.y == other.y &&
-                       this.length == other.length && this.width == other.width;
-            }
-            return false;
-        }
-        /// <summary> Generates a hash code for the rectangle. </summary>
-        public override int GetHashCode() => HashCode.Combine(x, y, length, width);
-
-
-        /// <summary> Provides a string representation of the rectangle. </summary>
-        public override string ToString() => $"Rectangle({x}, {y}, {width}x{length})";
     }
 }
