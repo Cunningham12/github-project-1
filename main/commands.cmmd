@@ -1,0 +1,8 @@
+Insert 10 10 5 5;
+Insert 20 20 8 8;
+Find 10 10;
+Update 10 10 7 7;
+Find 10 10;
+Delete 20 20;
+Find 20 20;
+Dump;
